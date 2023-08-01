@@ -17,13 +17,28 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   int _currentIndex = 0;
 
-  var appPages = <Widget>[
-    const HomePage(),
-    const TasksPage(),
-    const ReportPage()
-  ];
+  int currentHomeIndex = 0;
 
-  void updateIndex(index) {
+  void switchViewPressed() {}
+
+  var appPages = [const HomePage(), const TasksPage(), const ReportPage()];
+
+  // late List<Widget> appPages;
+  // _AppState() {
+  //   appPages = [
+  //     HomePage(switchViewPressed: switchViewPressed),
+  //     const TasksPage(),
+  //     const ReportPage()
+  //   ];
+  // }
+
+  // var appPages = <Widget>[
+  //   HomePage(currentHomeIndex: currentHomeIndex),
+  //   const TasksPage(),
+  //   const ReportPage()
+  // ];
+
+  void _updateIndex(index) {
     setState(() {
       _currentIndex = index;
     });
@@ -33,10 +48,15 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           title: Text(widget.title),
+          actions: [
+            IconButton(
+                onPressed: switchViewPressed, icon: const Icon(Icons.checklist))
+          ],
         ),
-        body: Center(
+        body: SizedBox(
           child: PageTransitionSwitcher(
             transitionBuilder: (child, animation, secondaryAnimation) {
               return FadeThroughTransition(
@@ -52,8 +72,10 @@ class _AppState extends State<App> {
             ),
           ),
         ),
-        bottomNavigationBar:
-            BottomNavigation(updateIndex: updateIndex, currentIndex: _currentIndex,));
+        bottomNavigationBar: BottomNavigation(
+          updateIndex: _updateIndex,
+          currentIndex: _currentIndex,
+        ));
   }
 }
 
@@ -64,10 +86,6 @@ class _NavigationDestinationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Center(child: item),
-      ],
-    );
+    return Container(child: item);
   }
 }

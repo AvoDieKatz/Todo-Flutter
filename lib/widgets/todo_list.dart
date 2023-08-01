@@ -1,4 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:todo_app/models/task.dart';
+
+Future<List<Task>> fetchTasks() async {
+  final response =
+      await http.get(Uri.parse('https://jsonplaceholder.typicode.com/todos'));
+
+  if (response.statusCode == 200) {
+    final jsonList = jsonDecode(response.body) as List;
+    List<Task> taskList =
+        jsonList.map((taskJson) => Task.fromJson(taskJson)).toList();
+    return taskList;
+  } else {
+    throw Exception("Failed to load tasks");
+  }
+}
 
 class TodoList extends StatefulWidget {
   const TodoList({super.key});
@@ -8,159 +26,44 @@ class TodoList extends StatefulWidget {
 }
 
 class _TodoListState extends State<TodoList> with TickerProviderStateMixin {
-  // late final AnimationController _fadeController;
-  // late final AnimationController _sizeController;
+  late Future<List<Task>> tasks;
 
   @override
   void initState() {
     super.initState();
-    // _fadeController = AnimationController(
-    //   duration: const Duration(seconds: 1),
-    //   vsync: this,
-    // )..repeat(reverse: true);
-
-    // _sizeController = AnimationController(
-    //   duration: const Duration(milliseconds: 850),
-    //   vsync: this,
-    // )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    // _fadeController.dispose();
-    // _sizeController.dispose();
-    super.dispose();
+    tasks = fetchTasks();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Hero(
-          tag: 'tag-list-1',
-          child: Material(
-            child: ListTile(
-              title: const Text('ListTile with Hero'),
-              subtitle: const Text('Tap here for Hero transition'),
-              tileColor: Theme.of(context).colorScheme.secondaryContainer,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<Widget>(builder: (BuildContext context) {
-                    return Scaffold(
-                        appBar: AppBar(title: const Text('Todo Title')),
-                        body: Column(children: [
-                          Hero(
-                            tag: 'ListTile-Hero',
-                            child: Material(
-                              child: ListTile(
-                                title: const Text('ListTile with Hero'),
-                                subtitle: const Text('Tap here to go back'),
-                                tileColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ),
-                          ),
-                        ])
-                        );
-                  }),
-                );
-              },
-            ),
-          ),
-        ),
-        const Divider(),
-        Hero(
-          tag: 'tag-list-2',
-          child: Material(
-            child: ListTile(
-              title: const Text('ListTile with Hero 2'),
-              subtitle: const Text('Tap here for Hero transition'),
-              tileColor: Theme.of(context).colorScheme.secondaryContainer,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<Widget>(builder: (BuildContext context) {
-                    return Scaffold(
-                        appBar: AppBar(title: const Text('Todo Title')),
-                        body: Column(children: [
-                          Hero(
-                            tag: 'ListTile-Hero-2',
-                            child: Material(
-                              child: ListTile(
-                                title: const Text('ListTile with Hero 2'),
-                                subtitle: const Text('Tap here to go back'),
-                                tileColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer,
-                                onTap: () {
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ),
-                          ),
-                        ])
-                        );
-                  }),
-                );
-              },
-            ),
-          ),
-        ),
+        FutureBuilder(
+            future: tasks,
+            builder: ((context, snapshot) {
+              if (snapshot.hasData) {
+                return Expanded(
+                    child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final obj = snapshot.data![index];
+                          return ListTile(
+                            title: Text(obj.title),
+                            subtitle: Text(obj.id.toString()),
+                            trailing: obj.completed
+                                ? const Icon(
+                                    Icons.check_circle_outline_outlined)
+                                : const Icon(Icons.circle_outlined),
+                          );
+                        }));
+              } else if (snapshot.hasError) {
+                return const Text(
+                    'There is an an error while loading task detail');
+              }
+              return const CircularProgressIndicator();
+            })),
       ],
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(title: const Text('ListTile Samples')),
-  //     body: Column(
-  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //       children: <Widget>[
-  //         Hero(
-  //           tag: 'ListTile-Hero',
-  //           // Wrap the ListTile in a Material widget so the ListTile has someplace
-  //           // to draw the animated colors during the hero transition.
-  //           child: Material(
-  //             child: ListTile(
-  //               title: const Text('ListTile with Hero'),
-  //               subtitle: const Text('Tap here for Hero transition'),
-  //               tileColor: Colors.cyan,
-  //               onTap: () {
-  //                 Navigator.push(
-  //                   context,
-  //                   MaterialPageRoute<Widget>(builder: (BuildContext context) {
-  //                     return Scaffold(
-  //                       appBar: AppBar(title: const Text('ListTile Hero')),
-  //                       body: Center(
-  //                         child: Hero(
-  //                           tag: 'ListTile-Hero',
-  //                           child: Material(
-  //                             child: ListTile(
-  //                               title: const Text('ListTile with Hero'),
-  //                               subtitle: const Text('Tap here to go back'),
-  //                               tileColor: Colors.blue[700],
-  //                               onTap: () {
-  //                                 Navigator.pop(context);
-  //                               },
-  //                             ),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                     );
-  //                   }),
-  //                 );
-  //               },
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
