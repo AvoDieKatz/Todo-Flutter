@@ -17,26 +17,11 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   int _currentIndex = 0;
 
-  int currentHomeIndex = 0;
-
-  void switchViewPressed() {}
-
-  var appPages = [const HomePage(), const TasksPage(), const ReportPage()];
-
-  // late List<Widget> appPages;
-  // _AppState() {
-  //   appPages = [
-  //     HomePage(switchViewPressed: switchViewPressed),
-  //     const TasksPage(),
-  //     const ReportPage()
-  //   ];
-  // }
-
-  // var appPages = <Widget>[
-  //   HomePage(currentHomeIndex: currentHomeIndex),
-  //   const TasksPage(),
-  //   const ReportPage()
-  // ];
+  var appPages = <Widget>[
+    const HomePage(),
+    const TasksPage(),
+    const ReportPage()
+  ];
 
   void _updateIndex(index) {
     setState(() {
@@ -46,17 +31,18 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+    
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           title: Text(widget.title),
-          actions: [
-            IconButton(
-                onPressed: switchViewPressed, icon: const Icon(Icons.checklist))
-          ],
         ),
         body: SizedBox(
+          height:  height,
+          width:  width,
           child: PageTransitionSwitcher(
             transitionBuilder: (child, animation, secondaryAnimation) {
               return FadeThroughTransition(
